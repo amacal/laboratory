@@ -1,8 +1,8 @@
 class BinaryPipe:
-    def __init__(self):
+    def __init__(self, threshold=1024*1024):
         self.offset = 0
         self.total = 0
-        self.threshold = 1024 * 1024
+        self.threshold = threshold
         self.data = bytearray()
         self.callback = None
 
@@ -21,15 +21,21 @@ class BinaryPipe:
         value = self.data[self.offset:self.offset+size]
         self.offset = self.offset + len(value)
         if self.offset >= self.threshold:
-            self.data = self.data[self.offset:]
+            self.data = self.data[self.offset:] if len(self.data) > self.offset else bytearray()
             self.offset = 0
         return bytes(value)
 
+    def rfind(self, sub):
+        return self.data.rfind(sub, self.offset, len(self.data)) - self.offset
+
+    def find(self, sub):
+        return self.data.find(sub, self.offset, len(self.data)) - self.offset
+
 class DictPipe:
-    def __init__(self):
+    def __init__(self, threshold = 64):
         self.offset = 0
         self.total = 0
-        self.threshold = 1024 * 1024
+        self.threshold = threshold
         self.data = list()
         self.callback = None
 
@@ -48,6 +54,6 @@ class DictPipe:
         value = self.data[self.offset:self.offset+size]
         self.offset = self.offset + len(value)
         if self.offset >= self.threshold:
-            self.data = self.data[self.offset:]
+            self.data = self.data[self.offset:] if len(self.data) > self.offset else list()
             self.offset = 0
         return value

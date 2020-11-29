@@ -1,19 +1,17 @@
 from .common import Metadata, Metrics
 from .pipes import BinaryPipe, DictPipe
 
-
 class Pipeline:
-    def __init__(self, name, steps, metrics=None, metadata=None):
+    def __init__(self, name, steps):
+        self.name = name
         self.steps = steps
-        self.metadata = Metadata() if metadata is None else metadata 
-        self.metrics = Metrics(name) if metrics is None else metrics
 
-    def init(self):
+    def init(self, metrics, metadata):
         prev = DictPipe()
         self.pipe = prev
         for step in self.steps:
             next = BinaryPipe() if step.output == 'binary' else DictPipe()
-            step.bind(prev, next, self.metrics, self.metadata)
+            step.bind(prev, next, metrics, metadata)
             prev = next
 
     def flush(self):
@@ -23,12 +21,15 @@ class Pipeline:
     def run(self, input):
         self.pipe.append([input])
 
-    def complete(self):
-        for key in self.metadata.keys():
-            self.metrics.log(f'{key} -> {self.metadata.get(key)}')
+    def complete(self, metrics, metadata):
+        for key in metadata.keys():
+            metrics.log(f'{key} -> {metadata.get(key)}')
 
-    def start(self, input=None):
-        self.init()
+    def start(self, input=None, metrics=None, metadata=None):
+        metadata = metadata if metadata else Metadata() 
+        metrics = metrics if metrics else Metrics(self.name)
+
+        self.init(metrics, metadata)
         self.run(input)
         self.flush()
-        self.complete()
+        self.complete(metrics, metadata)

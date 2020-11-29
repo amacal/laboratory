@@ -11,7 +11,7 @@ class Conditional:
     def bind(self, prev, next, metrics, metadata):
         self.prev = prev
         self.next = next
-        self.funnel.bind(prev, next, metrics, metadata)
+        self.funnel.bind(metrics, metadata)
         self.funnel.subscribe(self.complete)
         self.prev.subscribe(self.changed)
 
@@ -30,4 +30,4 @@ class Conditional:
                 self.funnel.append(value)
 
     def flush(self):
-        pass
+        self.funnel.flush()

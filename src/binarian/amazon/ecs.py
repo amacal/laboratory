@@ -1,6 +1,5 @@
 from boto3 import client
 
-
 class EcsTask:
     def __init__(self, cluster, task, securityGroup, vpcSubnet, environment):
         self.cluster = cluster
@@ -19,11 +18,10 @@ class EcsTask:
         self.prev.subscribe(self.changed)
 
     def changed(self):
-        while token := self.prev.read(size=1):
-            taskArn = self.start(token[0])
-            self.wait(taskArn)
-            token[0].release()
-            self.next.append([token[0].value])
+        while items := self.prev.read(size=1):
+            for item in items:
+                self.wait(self.start(item))
+                self.next.append([item])
 
     def flush(self):
         pass
