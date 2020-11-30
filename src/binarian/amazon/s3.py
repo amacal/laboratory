@@ -73,7 +73,7 @@ class S3Download:
 
     def range(self, target, offset, total):
         available = min(total - offset, self.chunksize) - 1
-        self.metrics.log(f'downloading range {offset}:{offset+available}/{total}')
+        self.metrics.log(f'downloading range {offset}:{offset+available}')
 
         response = self.client.get_object(
             Range=f'bytes={offset}-{offset+available}',

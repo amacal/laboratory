@@ -1,5 +1,4 @@
-from json import loads
-from json.decoder import JSONDecodeError
+from orjson import loads, JSONDecodeError
 
 class NDJsonChunk:
     def __init__(self, chunksize=1024*1024):

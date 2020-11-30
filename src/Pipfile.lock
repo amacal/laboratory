@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "1c649763ffffb7334e39268c9321e409c1c334fba2a0a07c271ed12b3910fb26"
+            "sha256": "cc1e51834b360cdbe697995b94dce3a7ec68ae1383171f2cf7256492d17971a9"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -80,6 +80,29 @@
             ],
             "index": "pypi",
             "version": "==4.6.2"
+        },
+        "orjson": {
+            "hashes": [
+                "sha256:0715ae45c37e05911cd1c63b4e45c2dda7634f031b50f5a4112a76827840fce1",
+                "sha256:17c9ee3a90af53358d774c21f76a39ecc26be20e3c1efcb48ade9d49b6b87547",
+                "sha256:19e28a554625812a8049368020bbf69a50a946db6a0b784d7611fcbe76854278",
+                "sha256:2b8d76e802e33f58d7d7deea72f19da8f8619afc591584c795328473b0722776",
+                "sha256:31cffd739adad89935884940466fab5ebcea4f41fd7691bdb16d15fb476cc48c",
+                "sha256:4663a44c769b885a0673dcfae34bbb64f1d18a44f55660672eb79085d5a8fbc4",
+                "sha256:46b78a1c7bc4c7f5e0c2ef4e25313d8021556f0aeff41f25ea6cf87b00d85b4a",
+                "sha256:57837ab34f22608a1ef08ebbb2b14e780f6f0321e95169efa9d5c0383b124890",
+                "sha256:9f22eaef23be0452fc41ff49f72ebe50a06ed4d13884d7a36a239ff57b8900d4",
+                "sha256:9f3a4de7d2b1749dd482457c2dfc6190e21dc8cccc3113abb409d028e9b63480",
+                "sha256:a1d111fe28fada2e08cb56c29c316b4b07afd7d0f8c178192125e6fe2f34846c",
+                "sha256:b0b324377f22c42165315a1ef193f189b81893dbd91d1b81c66a3fd7e1d5e298",
+                "sha256:d9869d598076331945ffdf27b04f8d53a2004dde725aed4a852125aaedca73bd",
+                "sha256:daa7484eb4854371332eeb61e11df31716cc207c7d433c9273fd4757d909ee9a",
+                "sha256:e1bd26e202e9126c7d6e081df1f5d28cdb714e2ebb03f28d6b966bac5a19cb4c",
+                "sha256:e987e5fa2ca80b9f5b856088effe00facb5672559721a6c1f0a8d53a1514c18b",
+                "sha256:f23898a57fcf1f5d03208b69eb51e048ef74105543488777f33dff87bb244618"
+            ],
+            "index": "pypi",
+            "version": "==3.4.4"
         },
         "python-dateutil": {
             "hashes": [

@@ -144,8 +144,9 @@ if __name__ == '__main__' and getenv('TYPE') == 'test':
     taskArn = parameters.value('/wikipedia/task_arn')
     clusterArn = parameters.value('/wikipedia/cluster_arn')
 
-    worker_sort('test', 'title', bucket, 'json/enwiki/20201120/stub/meta/current/current24.json', 'sort/enwiki/20201120/stub/meta/current/current24.json')
-    #master_sort('enwiki-20201120-stub-meta-current24.json', 'title', bucket, clusterArn, taskArn, securityGroup, vpcSubnet)
+    #worker_json('test', 'page', bucket, 'raw/enwiki/20201120/stub/meta/current/current24.xml.gz', 'json/enwiki/20201120/stub/meta/current/current24.json')
+    #worker_sort('test', 'title', bucket, 'json/enwiki/20201120/stub/meta/current/current24.json', 'sort/enwiki/20201120/stub/meta/current/current24.json')
+    master_sort('enwiki-20201120-stub-meta-current24.json', 'title', bucket, clusterArn, taskArn, securityGroup, vpcSubnet)
 
 if __name__ == '__main__' and getenv('TYPE') == 'worker-ftp':
     worker_ftp(getenv('NAME'), getenv('HOST'), getenv('DIRECTORY'), getenv('BUCKET'), getenv('INPUT'), getenv('OUTPUT'))
