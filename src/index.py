@@ -146,7 +146,7 @@ if __name__ == '__main__' and getenv('TYPE') == 'test':
 
     #worker_json('test', 'page', bucket, 'raw/enwiki/20201120/stub/meta/current/current24.xml.gz', 'json/enwiki/20201120/stub/meta/current/current24.json')
     #worker_sort('test', 'title', bucket, 'json/enwiki/20201120/stub/meta/current/current24.json', 'sort/enwiki/20201120/stub/meta/current/current24.json')
-    master_sort('enwiki-20201120-stub-meta-current24.json', 'title', bucket, clusterArn, taskArn, securityGroup, vpcSubnet)
+    master_sort('enwiki-20201120-stub-meta-current25.json', 'title', bucket, clusterArn, taskArn, securityGroup, vpcSubnet)
 
 if __name__ == '__main__' and getenv('TYPE') == 'worker-ftp':
     worker_ftp(getenv('NAME'), getenv('HOST'), getenv('DIRECTORY'), getenv('BUCKET'), getenv('INPUT'), getenv('OUTPUT'))
@@ -196,6 +196,7 @@ if __name__ == '__main__' and getenv('TYPE') == 'master':
         with ThreadPoolExecutor(max_workers=20) as executor:
             for item in fetch_names():
                 tasks.append(loop.run_in_executor(executor, master_get, item, 'page', bucket, clusterArn, taskArn, securityGroup, vpcSubnet, ftpQueue, jsonQueue))
+                #tasks.append(loop.run_in_executor(executor, master_sort, splitext(splitext(item)[0])[0]+'.json', 'title', bucket, clusterArn, taskArn, securityGroup, vpcSubnet))
 
             await wait(tasks)
 

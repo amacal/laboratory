@@ -1,4 +1,4 @@
-from json import dumps
+from orjson import dumps
 from .xml import XmlReader
 
 class XmlToJson:
@@ -28,4 +28,4 @@ class XmlToJson:
 
         while self.reader is not None and self.prev.length() > chunksize:
             if data := self.reader.tick(lambda: self.prev.length() > windowsize):
-                self.next.append(bytearray(dumps(data), 'utf8') + b'\n')
+                self.next.append(dumps(data) + b'\n')
