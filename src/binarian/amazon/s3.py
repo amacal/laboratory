@@ -46,6 +46,9 @@ class S3Download:
         self.input = 'dict'
         self.output = 'binary'
 
+    def length(self):
+        return None
+
     def bind(self, prev, next, metrics, metadata):
         self.prev = prev
         self.next = next
@@ -100,6 +103,9 @@ class S3Upload:
         self.upload_id = None
         self.input = 'binary'
         self.output = 'dict'
+
+    def length(self):
+        return None
 
     def bind(self, prev, next, metrics, metadata):
         self.prev = prev

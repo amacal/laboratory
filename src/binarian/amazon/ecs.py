@@ -92,7 +92,5 @@ class EcsTask:
                     self.metrics.raw(event['message'])
             except logs.exceptions.ResourceNotFoundException:
                 pass
-            except logs.exceptions.ClientError:
-                pass
 
             sleep(1)

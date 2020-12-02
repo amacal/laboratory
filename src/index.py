@@ -80,6 +80,15 @@ def master_sort(filename, tag, bucket, cluster, task, securityGroup, vpcSubnet):
 
     pipeline.start(input=filename)
 
+def driver(cluster, task, securityGroup, vpcSubnet):
+    pipeline = Pipeline(name='driver', steps=[
+        EcsTask(cluster=cluster, task=task, securityGroup=securityGroup, vpcSubnet=vpcSubnet, environment=lambda value: [
+            { 'name': 'TYPE', 'value': 'master' }
+        ])
+    ])
+
+    pipeline.start(input=None)
+
 def worker_ftp(name, host, directory, bucket, input, output):
     pipeline = Pipeline(name=name, steps=[
         FtpDownload(host=host, directory=directory),
@@ -125,7 +134,7 @@ def worker_sort(name, tag, bucket, input, output):
 
 def fetch_names():
     names = list()
-    ending = compile('enwiki-20201120-stub-meta-current[0-9]{1,2}(\.xml\.gz)$')
+    ending = compile('enwiki-20201120-stub-meta-history[0-9]{1,2}(\.xml\.gz)$')
 
     ftp = FTP('ftp.acc.umu.se')
     ftp.login()
@@ -144,9 +153,10 @@ if __name__ == '__main__' and getenv('TYPE') == 'test':
     taskArn = parameters.value('/wikipedia/task_arn')
     clusterArn = parameters.value('/wikipedia/cluster_arn')
 
-    #worker_json('test', 'page', bucket, 'raw/enwiki/20201120/stub/meta/current/current24.xml.gz', 'json/enwiki/20201120/stub/meta/current/current24.json')
+    worker_json('test', 'revision', bucket, 'raw/enwiki/20201120/stub/meta/history/history27.xml.gz', 'json/enwiki/20201120/stub/meta/history/history27.json')
     #worker_sort('test', 'title', bucket, 'json/enwiki/20201120/stub/meta/current/current24.json', 'sort/enwiki/20201120/stub/meta/current/current24.json')
-    master_sort('enwiki-20201120-stub-meta-current25.json', 'title', bucket, clusterArn, taskArn, securityGroup, vpcSubnet)
+    #master_sort('enwiki-20201120-stub-meta-current25.json', 'title', bucket, clusterArn, taskArn, securityGroup, vpcSubnet)
+    #driver(clusterArn, taskArn, securityGroup, vpcSubnet)
 
 if __name__ == '__main__' and getenv('TYPE') == 'worker-ftp':
     worker_ftp(getenv('NAME'), getenv('HOST'), getenv('DIRECTORY'), getenv('BUCKET'), getenv('INPUT'), getenv('OUTPUT'))
@@ -195,7 +205,7 @@ if __name__ == '__main__' and getenv('TYPE') == 'master':
 
         with ThreadPoolExecutor(max_workers=20) as executor:
             for item in fetch_names():
-                tasks.append(loop.run_in_executor(executor, master_get, item, 'page', bucket, clusterArn, taskArn, securityGroup, vpcSubnet, ftpQueue, jsonQueue))
+                tasks.append(loop.run_in_executor(executor, master_get, item, 'revision', bucket, clusterArn, taskArn, securityGroup, vpcSubnet, ftpQueue, jsonQueue))
                 #tasks.append(loop.run_in_executor(executor, master_sort, splitext(splitext(item)[0])[0]+'.json', 'title', bucket, clusterArn, taskArn, securityGroup, vpcSubnet))
 
             await wait(tasks)

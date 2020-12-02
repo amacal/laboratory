@@ -8,6 +8,9 @@ class Conditional:
         self.input = 'dict'
         self.output = 'dict'
 
+    def length(self):
+        return None
+
     def bind(self, prev, next, metrics, metadata):
         self.prev = prev
         self.next = next

@@ -8,11 +8,16 @@ class Pipeline:
 
     def init(self, metrics, metadata):
         prev = DictPipe()
+        pipes = list()
         self.pipe = prev
+        pipes.append(prev)
         for step in self.steps:
             next = BinaryPipe() if step.output == 'binary' else DictPipe()
             step.bind(prev, next, metrics, metadata)
             prev = next
+            pipes.append(step)
+            pipes.append(prev)
+        metrics.pipes = pipes
 
     def flush(self):
         for step in self.steps:

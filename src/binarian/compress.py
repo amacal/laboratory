@@ -1,10 +1,12 @@
 from gzip import GzipFile
 
-
 class Ungzip:
     def __init__(self):
         self.input = 'binary'
         self.output = 'binary'
+
+    def length(self):
+        return None
 
     def bind(self, prev, next, metrics, metadata):
         self.next = next
