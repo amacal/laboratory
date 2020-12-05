@@ -33,6 +33,6 @@ class XmlToJson:
         if self.reader is None and self.prev.length() > chunksize:
             self.reader = XmlReader(rowtag=self.rowtag, source=self.prev)
 
-        while self.reader is not None and self.prev.length() > chunksize:
-            if data := self.reader.tick(lambda: self.prev.length() > windowsize):
+        if self.reader is not None and self.prev.length() > chunksize:
+            while data := self.reader.tick(lambda: self.prev.length() > windowsize):
                 self.next.append(dumps(data) + b'\n')

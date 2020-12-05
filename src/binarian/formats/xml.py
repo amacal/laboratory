@@ -19,30 +19,29 @@ class XmlReader:
         while condition():
             try:
                 event, node = next(self.iterator)
-                _, _, node.tag = node.tag.rpartition('}')
+                _, _, tag = node.tag.rpartition('}')
             except StopIteration:
                 return None
 
-            if self.container is None and event == 'start' and node.tag == self.rowtag:
+            if self.container is None and tag == self.rowtag and event == 'start':
                 self.container = dict()
                 self.path.append(self.container)
                 self.clean(node)
-            elif self.container is not None and event == 'end' and node.tag == self.rowtag:
+            elif self.container is not None and tag == self.rowtag and event == 'end':
                 data = self.container
                 self.container = None
                 self.previous = list()
                 self.path = list()
                 return data
-            elif self.container is None and event == 'end':
-                self.clean(node)
             elif self.container is None:
-                pass
+                if event == 'end':
+                    self.clean(node)
             elif event == 'start':
                 if self.path[-1] is None:
                     self.path[-1] = dict()
-                self.previous.append(node.tag)
+                self.previous.append(tag)
                 self.path.append(None)
-            elif event == 'end' and self.path[-1] is None:
+            elif self.path[-1] is None:
                 self.path[-2][self.previous[-1]] = node.text
                 self.path.pop()
                 self.previous.pop()

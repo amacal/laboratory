@@ -41,7 +41,7 @@ def master_get(filename, rowtag, bucket, cluster, task, securityGroup, vpcSubnet
             ]
         ), 
         Conditional(
-            inverse=True,
+            inverse=False,
             condition=S3KeyExists(bucket=bucket, key=lambda value: f'json/{split_name(splitext(splitext(value)[0])[0])}.json'),
             steps=[
                 AcquireToken(queue=jsonQueue),
@@ -153,7 +153,12 @@ if __name__ == '__main__' and getenv('TYPE') == 'test':
     taskArn = parameters.value('/wikipedia/task_arn')
     clusterArn = parameters.value('/wikipedia/cluster_arn')
 
+    ftpQueue = Queue()
+    jsonQueue = Queue()
+    jsonQueue.put({})
+
     worker_json('test', 'revision', bucket, 'raw/enwiki/20201120/stub/meta/history/history27.xml.gz', 'json/enwiki/20201120/stub/meta/history/history27.json')
+    #master_get('enwiki-20201120-stub-meta-history27.xml.gz', 'revision', bucket, clusterArn, taskArn, securityGroup, vpcSubnet, ftpQueue, jsonQueue)
     #worker_sort('test', 'title', bucket, 'json/enwiki/20201120/stub/meta/current/current24.json', 'sort/enwiki/20201120/stub/meta/current/current24.json')
     #master_sort('enwiki-20201120-stub-meta-current25.json', 'title', bucket, clusterArn, taskArn, securityGroup, vpcSubnet)
     #driver(clusterArn, taskArn, securityGroup, vpcSubnet)
