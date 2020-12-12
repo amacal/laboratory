@@ -1,4 +1,5 @@
 from orjson import loads, JSONDecodeError
+from ..engine import Funnel, BinaryPipe, DictPipe
 
 class NDJsonChunk:
     def __init__(self, chunksize=1024*1024):
@@ -20,6 +21,47 @@ class NDJsonChunk:
     def flush(self):
         if self.prev.length() > 0:
             self.next.append(self.prev.read(size=-1))
+
+class NDJsonMeasure:
+    def __init__(self, steps=None, windowsize=1024*1024):
+        self.steps = steps
+        self.windowsize = windowsize
+        self.input = 'dict'
+        self.output = 'dict'
+
+    def bind(self, prev, next, metrics, metadata):
+        self.prev = prev
+        self.next = next
+        self.metrics = metrics
+        self.metadata = metadata
+        self.prev.subscribe(self.changed)
+
+    def find(self, item, index):
+        funnel = Funnel(self.steps())
+        funnel.bind(self.metrics, self.metadata, prev=DictPipe())
+        
+        while index < item.total-1:
+            funnel.append([item.between(start=index, end=index+self.windowsize-1)])
+            for value in funnel.read(size=-1):
+                if value == b'\n'[0]:
+                    return index
+                index += 1
+
+        raise
+
+    def process(self, item):
+        start = item.start if item.start==0 else self.find(item, item.start-1)+1
+        end = item.end if item.end==item.total-1 else self.find(item, item.end)
+
+        self.next.append([item.between(start, end)])
+
+    def changed(self):
+        while items := self.prev.read(size=1):
+            for item in items:
+                self.process(item)
+
+    def flush(self):
+        self.changed()            
 
 class NDJsonIndexed:
     def __init__(self, key, data):

@@ -7,7 +7,7 @@ from re import compile, sub
 from asyncio import get_running_loop, wait, run
 from concurrent.futures import ThreadPoolExecutor
 
-from binarian import Pipeline, Singleton, S3Prefix, S3Object, S3List, S3Delete, S3Download, S3Upload, Ungzip, XmlToJson, Conditional, ForEachChunk, S3KeyExists, AcquireToken, ReleaseToken, QuickSort, MergeSort, DictDebug, BinaryDebug, WaitAll, EcsTask, FtpDownload, NDJsonChunk, NDJsonIndex, NDJsonFlush, DictConsumer, BinaryConsumer
+from binarian import Pipeline, Singleton, OneToMany, OneToOne, S3Prefix, S3Object, S3List, S3Delete, S3Download, S3Upload, S3Rename, S3Chunk, Ungzip, XmlToJson, Conditional, ForEachChunk, ForEachItem, ForEachItemParallel, S3KeyExists, AcquireToken, ReleaseToken, QuickSort, MergeSort, DataMarker, MergeGroup, MinMax, DictDebug, BinaryDebug, WaitAll, EcsTask, Lambda, FtpDownload, NDJsonChunk, NDJsonIndex, NDJsonFlush, NDJsonMeasure, DictConsumer, BinaryConsumer, Serialize, Deserialize
 
 class Parameters:
     def __init__(self):
@@ -41,7 +41,7 @@ def master_get(filename, rowtag, bucket, cluster, task, securityGroup, vpcSubnet
             ]
         ), 
         Conditional(
-            inverse=False,
+            inverse=True,
             condition=S3KeyExists(bucket=bucket, key=lambda value: f'json/{split_name(splitext(splitext(value)[0])[0])}.json'),
             steps=[
                 AcquireToken(queue=jsonQueue),
@@ -109,24 +109,40 @@ def worker_json(name, rowtag, bucket, input, output):
 
 def worker_sort(name, tag, bucket, input, output):
     pipeline = Pipeline(name=name, steps=[
-        S3Download(),
-        NDJsonChunk(chunksize=1024*1024),
-        ForEachChunk(chunksize=512*1024*1024, steps=lambda index: [
-            NDJsonIndex(extract=lambda row: row[tag]),
-            QuickSort(key=lambda row: row.key),
-            NDJsonFlush(),
-            S3Upload(bucket=bucket, key=f'{output}.tmp/{index}', chunksize=128*1024*1024)
+        S3Chunk(chunksize=512*1024*1024),
+        ForEachItemParallel(threads=16, steps=lambda index, metadata: [
+            Serialize(),
+            Lambda('wikipedia-run', lambda item: {
+                "type": "quick-sort",
+                "name": f'{name}-{index}',
+                "bucket": bucket,
+                "index": index,
+                "tag": tag,
+                "input": item,
+                "output": output
+            }),
+            OneToMany(),
+            Deserialize(),
         ]),
+        MergeGroup(),
+        ForEachItemParallel(threads=32, steps=lambda index, metadata: [
+            Serialize(),
+            Lambda('wikipedia-run', lambda item: {
+                "type": "kway-merge",
+                "name": f'{name}-{index}',
+                "bucket": bucket,
+                "index": index,
+                "tag": tag,
+                "input": item,
+                "output": output
+            }),
+            OneToMany(),
+            Deserialize(),
+        ]),
+        #Singleton(value=S3Prefix(bucket=bucket, prefix=f'{output}.tmp/')),
+        #S3List(),
+        #S3Delete(),
         WaitAll(),
-        MergeSort(key=lambda row: row.key, steps=lambda index: [
-            S3Download(),
-            NDJsonIndex(extract=lambda row: row[tag]),
-        ]),
-        NDJsonFlush(),
-        S3Upload(bucket=bucket, key=f'{output}', chunksize=256*1024*1024),
-        Singleton(value=S3Prefix(bucket=bucket, prefix=f'{output}.tmp/')),
-        S3List(),
-        S3Delete(),
         DictDebug(),
     ])
 
@@ -157,10 +173,10 @@ if __name__ == '__main__' and getenv('TYPE') == 'test':
     jsonQueue = Queue()
     jsonQueue.put({})
 
-    worker_json('test', 'revision', bucket, 'raw/enwiki/20201120/stub/meta/history/history27.xml.gz', 'json/enwiki/20201120/stub/meta/history/history27.json')
+    #worker_json('test', 'revision', bucket, 'raw/enwiki/20201120/stub/meta/history/history27.xml.gz', 'json/enwiki/20201120/stub/meta/history/history27.json')
     #master_get('enwiki-20201120-stub-meta-history27.xml.gz', 'revision', bucket, clusterArn, taskArn, securityGroup, vpcSubnet, ftpQueue, jsonQueue)
-    #worker_sort('test', 'title', bucket, 'json/enwiki/20201120/stub/meta/current/current24.json', 'sort/enwiki/20201120/stub/meta/current/current24.json')
-    #master_sort('enwiki-20201120-stub-meta-current25.json', 'title', bucket, clusterArn, taskArn, securityGroup, vpcSubnet)
+    worker_sort('test', 'id', bucket, 'json/enwiki/20201120/stub/meta/history/history24.json', 'sort/enwiki/20201120/stub/meta/history/history24.json')
+    #master_sort('enwiki-20201120-stub-meta-history27.json', 'id', bucket, clusterArn, taskArn, securityGroup, vpcSubnet)
     #driver(clusterArn, taskArn, securityGroup, vpcSubnet)
 
 if __name__ == '__main__' and getenv('TYPE') == 'worker-ftp':

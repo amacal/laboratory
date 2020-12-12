@@ -7,6 +7,8 @@ name = "pypi"
 boto3 = "*"
 lxml = "*"
 orjson = "*"
+awslambdaric = "*"
+dill = "*"
 
 [dev-packages]
 

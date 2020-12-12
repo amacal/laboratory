@@ -97,7 +97,7 @@ resource "aws_glue_crawler" "pages_logging_crawler" {
   classifiers   = [aws_glue_classifier.logitem_json.id]
 
   s3_target {
-    path = "s3://${aws_s3_bucket.data.id}/json/enwiki/20201020/stub/meta/history/"
+    path = "s3://${aws_s3_bucket.data.id}/json/enwiki/20201120/stub/meta/history/"
   }
 }
 

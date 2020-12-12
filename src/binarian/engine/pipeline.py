@@ -18,6 +18,7 @@ class Pipeline:
             pipes.append(step)
             pipes.append(prev)
         metrics.pipes = pipes
+        return prev
 
     def flush(self):
         for step in self.steps:
@@ -33,8 +34,10 @@ class Pipeline:
     def start(self, input=None, metrics=None, metadata=None):
         metadata = metadata if metadata else Metadata() 
         metrics = metrics if metrics else Metrics(self.name)
+        pipe = self.init(metrics, metadata)
 
-        self.init(metrics, metadata)
         self.run(input)
         self.flush()
         self.complete(metrics, metadata)
+
+        return pipe.read(size=-1)
